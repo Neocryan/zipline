@@ -39,7 +39,7 @@ class AlgorithmSimulator(object):
     }
 
     def __init__(self, algo, sim_params, data_portal, clock, benchmark_source,
-                 restrictions, universe_func):
+                 restrictions, universe_func, instant_filling):
 
         # ==============
         # Simulation
@@ -53,6 +53,8 @@ class AlgorithmSimulator(object):
         # Algo Setup
         # ==============
         self.algo = algo
+
+        self.instant_filling = instant_filling
 
         # ==============
         # Snapshot Setup
@@ -113,6 +115,20 @@ class AlgorithmSimulator(object):
 
             blotter = algo.blotter
 
+            # If instant filling, the blotter deals with the orders first
+            if self.instant_filling:
+                handle_data(algo, current_data, dt_to_use)
+
+                # grab any new orders from the blotter, then clear the list.
+                # this includes cancelled orders.
+                new_orders = blotter.new_orders
+                blotter.new_orders = []
+
+                # if we have any new orders, record them so that we know
+                # in what perf period they were placed.
+                for new_order in new_orders:
+                    metrics_tracker.process_order(new_order)
+
             # handle any transactions and commissions coming out new orders
             # placed in the last bar
             new_transactions, new_commissions, closed_orders = \
@@ -130,17 +146,19 @@ class AlgorithmSimulator(object):
             for commission in new_commissions:
                 metrics_tracker.process_commission(commission)
 
-            handle_data(algo, current_data, dt_to_use)
+            # If nto instant filling, the blotter deals with the orders later
+            if not self.instant_filling:
+                handle_data(algo, current_data, dt_to_use)
 
-            # grab any new orders from the blotter, then clear the list.
-            # this includes cancelled orders.
-            new_orders = blotter.new_orders
-            blotter.new_orders = []
+                # grab any new orders from the blotter, then clear the list.
+                # this includes cancelled orders.
+                new_orders = blotter.new_orders
+                blotter.new_orders = []
 
-            # if we have any new orders, record them so that we know
-            # in what perf period they were placed.
-            for new_order in new_orders:
-                metrics_tracker.process_order(new_order)
+                # if we have any new orders, record them so that we know
+                # in what perf period they were placed.
+                for new_order in new_orders:
+                    metrics_tracker.process_order(new_order)
 
         def once_a_day(midnight_dt, current_data=self.current_data,
                        data_portal=self.data_portal):

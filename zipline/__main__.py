@@ -206,6 +206,12 @@ def ipython_only(option):
     help="The blotter to use.",
     show_default=True,
 )
+@click.option(
+    '--instant-filling',
+    default=False,
+    help="If the orders can be filled instantly",
+    show_default=True,
+)
 @ipython_only(click.option(
     '--local-namespace/--no-local-namespace',
     is_flag=True,
@@ -228,7 +234,8 @@ def run(ctx,
         print_algo,
         metrics_set,
         local_namespace,
-        blotter):
+        blotter,
+        instant_filling):
     """Run a backtest for the given algorithm.
     """
     # check that the start and end dates are passed correctly
@@ -274,7 +281,7 @@ def run(ctx,
         environ=os.environ,
         blotter=blotter,
         benchmark_returns=None,
-    )
+        instant_filling=instant_filling)
 
     if output == '-':
         click.echo(str(perf))
