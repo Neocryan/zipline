@@ -232,6 +232,7 @@ class TradingAlgorithm(object):
                  capital_changes=None,
                  get_pipeline_loader=None,
                  create_event_context=None,
+                 instant_filling=False,
                  **initialize_kwargs):
         # List of trading controls to be used to validate orders.
         self.trading_controls = []
@@ -269,6 +270,8 @@ class TradingAlgorithm(object):
             self.asset_finder = data_portal.asset_finder
 
         self.benchmark_returns = benchmark_returns
+
+        self.instant_filling = instant_filling
 
         # XXX: This is also a mess. We should remove all of this and only allow
         #      one way to pass a calendar.
@@ -580,7 +583,8 @@ class TradingAlgorithm(object):
             self._create_clock(),
             benchmark_source,
             self.restrictions,
-            universe_func=self._calculate_universe
+            universe_func=self._calculate_universe,
+            instant_filling=self.instant_filling
         )
 
         metrics_tracker.handle_start_of_simulation(benchmark_source)

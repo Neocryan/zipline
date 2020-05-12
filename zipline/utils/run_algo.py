@@ -79,7 +79,9 @@ def _run(handle_data,
          local_namespace,
          environ,
          blotter,
-         benchmark_spec):
+         benchmark_spec,
+         instant_filling):
+
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`zipline.run_algo`.
@@ -205,6 +207,7 @@ def _run(handle_data,
         blotter=blotter,
         benchmark_returns=benchmark_returns,
         benchmark_sid=benchmark_sid,
+        instant_filling=instant_filling,
         **{
             'initialize': initialize,
             'handle_data': handle_data,
@@ -296,7 +299,8 @@ def run_algorithm(start,
                   extensions=(),
                   strict_extensions=True,
                   environ=os.environ,
-                  blotter='default'):
+                  blotter='default',
+                  instant_filling=False):
     """
     Run a trading algorithm.
 
@@ -355,6 +359,7 @@ def run_algorithm(start,
         ``zipline.extensions.register`` and call it with no parameters.
         Default is a :class:`zipline.finance.blotter.SimulationBlotter` that
         never cancels orders.
+    instant_filling: The order fills instantly as soon as it appears
 
     Returns
     -------
@@ -391,6 +396,7 @@ def run_algorithm(start,
         environ=environ,
         blotter=blotter,
         benchmark_spec=benchmark_spec,
+        instant_filling=instant_filling
     )
 
 
