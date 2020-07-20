@@ -142,6 +142,7 @@ def _run(handle_data,
         bundle,
         environ,
         bundle_timestamp,
+        calendar=trading_calendar
     )
 
     first_trading_day = \

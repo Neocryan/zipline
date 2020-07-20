@@ -226,7 +226,10 @@ class BcolzMinuteBarMetadata(object):
                 minutes_per_day = US_EQUITIES_MINUTES_PER_DAY
 
             if version >= 2:
-                calendar = get_calendar(raw_data['calendar_name'])
+                try:
+                    calendar = get_calendar(raw_data['calendar_name'])
+                except:
+                    calendar = None
                 start_session = pd.Timestamp(
                     raw_data['start_session'], tz='UTC')
                 end_session = pd.Timestamp(raw_data['end_session'], tz='UTC')
@@ -913,7 +916,7 @@ class BcolzMinuteBarReader(MinuteBarReader):
     # can do so by mutating DEFAULT_MINUTELY_SID_CACHE_SIZES.
     _default_proxy = mappingproxy(DEFAULT_MINUTELY_SID_CACHE_SIZES)
 
-    def __init__(self, rootdir, sid_cache_sizes=_default_proxy):
+    def __init__(self, rootdir, sid_cache_sizes=_default_proxy, calendar=None):
 
         self._rootdir = rootdir
 
@@ -921,8 +924,10 @@ class BcolzMinuteBarReader(MinuteBarReader):
 
         self._start_session = metadata.start_session
         self._end_session = metadata.end_session
-
-        self.calendar = metadata.calendar
+        if calendar is None:
+            self.calendar = metadata.calendar
+        else:
+            self.calendar = calendar
         slicer = self.calendar.schedule.index.slice_indexer(
             self._start_session,
             self._end_session,

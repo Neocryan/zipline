@@ -335,7 +335,8 @@ def _make_bundle_core():
                environ=os.environ,
                timestamp=None,
                assets_versions=(),
-               show_progress=False):
+               show_progress=False,
+               calendar=None):
         """Ingest data for a given bundle.
 
         Parameters
@@ -356,8 +357,8 @@ def _make_bundle_core():
             bundle = bundles[name]
         except KeyError:
             raise UnknownBundle(name)
-
-        calendar = get_calendar(bundle.calendar_name)
+        if calendar is None:
+            calendar = get_calendar(bundle.calendar_name)
 
         start_session = bundle.start_session
         end_session = bundle.end_session
@@ -493,7 +494,7 @@ def _make_bundle_core():
                 ),
             )
 
-    def load(name, environ=os.environ, timestamp=None):
+    def load(name, environ=os.environ, timestamp=None, calendar=None):
         """Loads a previously ingested bundle.
 
         Parameters
@@ -520,9 +521,11 @@ def _make_bundle_core():
             ),
             equity_minute_bar_reader=BcolzMinuteBarReader(
                 minute_equity_path(name, timestr, environ=environ),
+                calendar=calendar
             ),
             equity_daily_bar_reader=BcolzDailyBarReader(
                 daily_equity_path(name, timestr, environ=environ),
+                calendar=calendar
             ),
             adjustment_reader=SQLiteAdjustmentReader(
                 adjustment_db_path(name, timestr, environ=environ),
